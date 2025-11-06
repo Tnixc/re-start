@@ -11,7 +11,7 @@
                 const defaultTheme = '__DEFAULT_THEME__'
 
                 try {
-                    const stored = localStorage.getItem('themeSettings')
+                    const stored = localStorage.getItem('settings')
                     let themeName = defaultTheme
                     if (stored) {
                         const parsed = JSON.parse(stored)

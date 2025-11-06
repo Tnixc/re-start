@@ -1,7 +1,6 @@
 <script>
     import { fade, fly } from 'svelte/transition'
     import { saveSettings, settings } from '../settings-store.svelte.js'
-    import { getTheme, setTheme } from '../theme-store.svelte.js'
     import { themeNames, themes } from '../themes.js'
     import RadioButton from './RadioButton.svelte'
 
@@ -9,12 +8,6 @@
 
     // @ts-ignore
     const version = __APP_VERSION__
-
-    // Reactive theme binding
-    let currentTheme = $state(getTheme())
-    $effect(() => {
-        setTheme(currentTheme)
-    })
 
     function addLink() {
         settings.links = [...settings.links, { title: '', url: '' }]
@@ -61,7 +54,7 @@
                     {#each themeNames as themeName}
                         <div class="theme-option">
                             <RadioButton
-                                bind:group={currentTheme}
+                                bind:group={settings.currentTheme}
                                 value={themeName}
                             >
                                 <div class="theme-preview">

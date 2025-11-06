@@ -1,17 +1,27 @@
 <script>
     import '@fontsource-variable/geist-mono'
     import { settings } from './lib/settings-store.svelte.js'
+    import { themes } from './lib/themes.js'
     import Clock from './lib/components/Clock.svelte'
     import Links from './lib/components/Links.svelte'
     import Settings from './lib/components/Settings.svelte'
     import Stats from './lib/components/Stats.svelte'
     import Todoist from './lib/components/Todoist.svelte'
     import Weather from './lib/components/Weather.svelte'
+    import { saveSettings } from './lib/settings-store.svelte.js'
 
     let showSettings = $state(false)
 
     function closeSettings() {
         showSettings = false
+    }
+
+    function applyTheme(themeName) {
+        const theme = themes[themeName] || themes['defaultTheme']
+        const root = document.documentElement
+        for (const [key, value] of Object.entries(theme.colors)) {
+            root.style.setProperty(key, value)
+        }
     }
 
     $effect(() => {
@@ -20,6 +30,14 @@
             '--font-family',
             `'${fontName}', monospace`
         )
+    })
+
+    $effect(() => {
+        applyTheme(settings.currentTheme)
+    })
+
+    $effect(() => {
+        saveSettings(settings)
     })
 </script>
 

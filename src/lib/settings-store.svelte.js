@@ -1,6 +1,7 @@
 let defaultSettings = {
     timeFormat: '12hr',
     font: 'Geist Mono Variable',
+    currentTheme: 'default',
     todoistApiToken: '',
     latitude: null,
     longitude: null,
