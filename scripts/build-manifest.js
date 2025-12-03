@@ -2,8 +2,8 @@ import fs from 'fs'
 import path from 'path'
 
 const browser = process.argv[2] || 'firefox'
+const distPath = process.argv[3] || './dist'
 const manifestPath = './public/manifest.json'
-const distPath = './dist'
 
 // Read the source manifest
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'))

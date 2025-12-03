@@ -5,9 +5,10 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "npm run build:firefox",
-        "build:firefox": "vite build && node scripts/build-manifest.js firefox",
-        "build:chrome": "vite build && node scripts/build-manifest.js chrome",
+        "build": "vite build --outDir dist/firefox",
+        "build:firefox": "vite build --outDir dist/firefox",
+        "build:chrome": "vite build --outDir dist/chrome && node scripts/build-manifest.js chrome dist/chrome",
+        "watch": "vite build --outDir dist/firefox --watch",
         "preview": "vite preview"
     },
     "devDependencies": {
