@@ -79,13 +79,6 @@
         try {
             if (backend === 'google-tasks') {
                 api = createTaskBackend(backend)
-
-                if (!api.getIsSignedIn()) {
-                    settings.googleTasksSignedIn = false
-                    error = 'google sign in expired'
-                    syncing = false
-                    return
-                }
             } else {
                 api = createTaskBackend(backend, { token })
             }
@@ -109,7 +102,16 @@
             await api.sync()
             tasks = api.getTasks()
         } catch (err) {
-            error = `failed to sync tasks`
+            // Check if this is an auth error for Google Tasks
+            if (
+                settings.taskBackend === 'google-tasks' &&
+                err.message?.includes('Authentication expired')
+            ) {
+                settings.googleTasksSignedIn = false
+                error = 'google sign in expired'
+            } else {
+                error = `failed to sync tasks`
+            }
             console.error(err)
         } finally {
             if (showSyncing) syncing = false

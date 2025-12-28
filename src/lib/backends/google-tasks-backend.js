@@ -1,4 +1,5 @@
 import TaskBackend from './task-backend.js'
+import { isChrome } from '../browser-detect.js'
 
 /**
  * Google Tasks API client for Chrome Extensions
@@ -12,24 +13,11 @@ class GoogleTasksBackendExtension extends TaskBackend {
 
         this.dataKey = 'google_tasks_data'
         this.tasklistIdKey = 'google_tasks_default_list'
-        this.signedInKey = 'google_tasks_signed_in'
         this.data = JSON.parse(localStorage.getItem(this.dataKey) ?? '{}')
         this.defaultTasklistId =
             localStorage.getItem(this.tasklistIdKey) ?? '@default'
-        this.isSignedIn = localStorage.getItem(this.signedInKey) === 'true'
         this.accessToken = null
         this.tokenPromise = null // Prevent multiple simultaneous token requests
-    }
-
-    /**
-     * Check if Chrome Identity API is available
-     */
-    isChromeIdentityAvailable() {
-        return (
-            typeof chrome !== 'undefined' &&
-            chrome.identity &&
-            chrome.identity.getAuthToken
-        )
     }
 
     /**
@@ -37,7 +25,7 @@ class GoogleTasksBackendExtension extends TaskBackend {
      * This automatically handles token caching and refresh
      */
     async getAuthToken(interactive = false) {
-        if (!this.isChromeIdentityAvailable()) {
+        if (!isChrome()) {
             throw new Error(
                 'Chrome identity API not available. Google Tasks only works in Chrome.'
             )
@@ -55,8 +43,6 @@ class GoogleTasksBackendExtension extends TaskBackend {
                     scopes: this.scopes,
                 },
                 (token) => {
-                    this.tokenPromise = null
-
                     if (chrome.runtime.lastError) {
                         reject(new Error(chrome.runtime.lastError.message))
                         return
@@ -73,7 +59,11 @@ class GoogleTasksBackendExtension extends TaskBackend {
             )
         })
 
-        return this.tokenPromise
+        try {
+            return await this.tokenPromise
+        } finally {
+            this.tokenPromise = null
+        }
     }
 
     /**
@@ -81,29 +71,21 @@ class GoogleTasksBackendExtension extends TaskBackend {
      * This handles OAuth flow automatically and keeps users signed in
      */
     async signIn() {
-        if (!this.isChromeIdentityAvailable()) {
+        if (!isChrome()) {
             throw new Error(
                 'Chrome identity API not available. Google Tasks only works in Chrome.'
             )
         }
 
-        try {
-            await this.getAuthToken(true)
-            this.isSignedIn = true
-            localStorage.setItem(this.signedInKey, 'true')
-            return this.accessToken
-        } catch (error) {
-            this.isSignedIn = false
-            localStorage.setItem(this.signedInKey, 'false')
-            throw error
-        }
+        await this.getAuthToken(true)
+        return this.accessToken
     }
 
     /**
      * Sign out and clear cached tokens
      */
     async signOut() {
-        if (!this.isChromeIdentityAvailable()) {
+        if (!isChrome()) {
             throw new Error(
                 'Chrome identity API not available. Google Tasks only works in Chrome.'
             )
@@ -122,27 +104,15 @@ class GoogleTasksBackendExtension extends TaskBackend {
         }
 
         this.accessToken = null
-        this.isSignedIn = false
-        localStorage.setItem(this.signedInKey, 'false')
         this.clearLocalData()
     }
 
-    /**
-     * Check if signed in
-     */
-    getIsSignedIn() {
-        return this.isSignedIn
-    }
 
     /**
      * Make an authenticated API request
      * Chrome identity API automatically handles token refresh
      */
     async apiRequest(endpoint, options = {}) {
-        if (!this.isSignedIn) {
-            throw new Error('Not signed in')
-        }
-
         // Get a fresh token (Chrome caches it and auto-refreshes as needed)
         let token = await this.getAuthToken(false)
 
@@ -192,8 +162,7 @@ class GoogleTasksBackendExtension extends TaskBackend {
                     return retryResponse.json()
                 } catch (error) {
                     // Token refresh failed, user needs to sign in again
-                    this.isSignedIn = false
-                    localStorage.setItem(this.signedInKey, 'false')
+                    this.clearLocalData()
                     throw new Error(
                         'Authentication expired. Please sign in again.'
                     )
@@ -212,10 +181,6 @@ class GoogleTasksBackendExtension extends TaskBackend {
      * Sync tasks from Google Tasks API
      */
     async sync(resourceTypes = ['tasklists', 'tasks']) {
-        if (!this.isSignedIn) {
-            throw new Error('Not signed in to Google account')
-        }
-
         try {
             // Get task lists
             if (resourceTypes.includes('tasklists')) {
