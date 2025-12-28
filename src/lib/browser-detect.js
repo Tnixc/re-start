@@ -3,28 +3,22 @@
  */
 
 /**
- * Check if running in Chrome (not Chromium-based browsers like Edge)
+ * Check if running in Chrome.
  * Google Tasks backend only works in Chrome due to chrome.identity API requirements
  */
 export function isChrome() {
-    if (typeof chrome === 'undefined') {
-        return false
-    }
-
-    // Check for Chrome-specific APIs
-    const hasChromeIdentity = chrome.identity && typeof chrome.identity.getAuthToken === 'function'
-
-    // Chrome has a specific runtime structure
-    const isChromeRuntime = chrome.runtime && chrome.runtime.id !== undefined
-
-    return hasChromeIdentity && isChromeRuntime
+    return (
+        typeof chrome !== 'undefined' &&
+        chrome.identity?.getAuthToken !== undefined &&
+        chrome.runtime?.id !== undefined
+    )
 }
 
 /**
  * Check if running in Firefox
  */
 export function isFirefox() {
-    return typeof browser !== 'undefined' && browser.runtime && browser.runtime.id !== undefined
+    return typeof browser !== 'undefined' && browser.runtime?.id !== undefined
 }
 
 /**
