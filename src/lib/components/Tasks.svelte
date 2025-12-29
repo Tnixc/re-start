@@ -9,9 +9,11 @@
         stripDateMatch,
         formatTaskDue,
     } from '../date-matcher.js'
+    import { parseProjectMatch, stripProjectMatch } from '../project-matcher.js'
 
     let api = null
     let tasks = $state([])
+    let availableProjects = $state([])
     let syncing = $state(true)
     let error = $state('')
     let initialLoad = $state(true)
@@ -19,8 +21,53 @@
     let taskCount = $derived(tasks.filter((task) => !task.checked).length)
     let newTaskContent = $state('')
     let addingTask = $state(false)
-    let parsedDate = $state(null)
     let togglingTasks = $state(new Set())
+
+    // Derived project match
+    let parsedProject = $derived(
+        parseProjectMatch(newTaskContent, availableProjects)
+    )
+
+    // Derived date match - parse from text AFTER stripping project
+    let parsedDate = $derived.by(() => {
+        let textForDateParsing = newTaskContent
+
+        // If there's a project match, strip it first
+        if (parsedProject?.match) {
+            textForDateParsing = stripProjectMatch(
+                newTaskContent,
+                parsedProject.match
+            )
+        }
+
+        const dateResult = parseSmartDate(textForDateParsing, {
+            dateFormat: settings.dateFormat,
+        })
+
+        // If we stripped a project and found a date, find where it is in the original text
+        if (dateResult?.match && parsedProject?.match) {
+            const dateText = textForDateParsing.slice(
+                dateResult.match.start,
+                dateResult.match.end
+            )
+
+            // Find this date text in the original, searching after the project match
+            const searchStart = parsedProject.match.end
+            const foundIndex = newTaskContent.indexOf(dateText, searchStart)
+
+            if (foundIndex !== -1) {
+                dateResult.match = {
+                    start: foundIndex,
+                    end: foundIndex + dateText.length,
+                }
+            } else {
+                // Couldn't find date in original text, don't highlight it
+                return null
+            }
+        }
+
+        return dateResult
+    })
 
     function handleVisibilityChange() {
         if (document.visibilityState === 'visible' && api) {
@@ -45,16 +92,11 @@
         initializeAPI(backend, token, tokenChanged)
     })
 
-    $effect(() => {
-        parsedDate = parseSmartDate(newTaskContent, {
-            dateFormat: settings.dateFormat,
-        })
-    })
-
     async function initializeAPI(backend, token, clearLocalData = false) {
         if (backend === 'todoist' && !token) {
             api = null
             tasks = []
+            availableProjects = []
             syncing = false
             error = 'no todoist api token'
             return
@@ -63,6 +105,7 @@
         if (backend === 'google-tasks' && !isChrome()) {
             api = null
             tasks = []
+            availableProjects = []
             syncing = false
             error = 'google tasks only works in chrome'
             return
@@ -71,6 +114,7 @@
         if (backend === 'google-tasks' && !settings.googleTasksSignedIn) {
             api = null
             tasks = []
+            availableProjects = []
             syncing = false
             error = 'not signed in to google'
             return
@@ -86,6 +130,7 @@
             if (clearLocalData) {
                 api.clearLocalData()
                 tasks = []
+                availableProjects = []
             }
             await loadTasks(true)
         } catch (err) {
@@ -101,6 +146,19 @@
             error = ''
             await api.sync()
             tasks = api.getTasks()
+
+            // Update available projects/lists
+            if (settings.taskBackend === 'todoist') {
+                availableProjects = (api.data?.projects || []).map((p) => ({
+                    id: p.id,
+                    name: p.name,
+                }))
+            } else if (settings.taskBackend === 'google-tasks') {
+                availableProjects = (api.data?.tasklists || []).map((tl) => ({
+                    id: tl.id,
+                    name: tl.title,
+                }))
+            }
         } catch (err) {
             // Check if this is an auth error for Google Tasks
             if (
@@ -125,14 +183,25 @@
 
         let content = raw
         let due = null
+        let projectId = null
+
+        // Strip date match
         if (parsedDate?.match) {
-            const cleaned = stripDateMatch(raw, parsedDate.match)
-            content = cleaned || raw
+            const cleaned = stripDateMatch(content, parsedDate.match)
+            content = cleaned || content
             due = formatTaskDue(parsedDate.date, parsedDate.hasTime)
         }
+
+        // Strip project match
+        if (parsedProject?.match) {
+            const cleaned = stripProjectMatch(content, parsedProject.match)
+            content = cleaned || content
+            projectId = parsedProject.projectId
+        }
+
         try {
             addingTask = true
-            await api.addTask(content, due)
+            await api.addTask(content, due, projectId)
             newTaskContent = ''
             await loadTasks()
         } catch (err) {
@@ -304,6 +373,7 @@
                 <AddTask
                     bind:value={newTaskContent}
                     bind:parsed={parsedDate}
+                    {parsedProject}
                     disabled={addingTask}
                     loading={addingTask}
                     show={tasks.length === 0}

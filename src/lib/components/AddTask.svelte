@@ -2,6 +2,7 @@
     let {
         value = $bindable(''),
         parsed = $bindable(null),
+        parsedProject = null,
         placeholder = 'new task',
         disabled = false,
         loading = false,
@@ -19,12 +20,60 @@
         oninput?.(event.target.value)
     }
 
-    const match = $derived(parsed?.match)
-    const before = $derived(match ? value.slice(0, match.start) : value)
-    const matchedText = $derived(
-        match ? value.slice(match.start, match.end) : ''
-    )
-    const after = $derived(match ? value.slice(match.end) : '')
+    // Build text segments with multiple highlights
+    const segments = $derived.by(() => {
+        if (!value) return []
+
+        const matches = []
+        if (parsed?.match) {
+            matches.push({ ...parsed.match, type: 'date' })
+        }
+        if (parsedProject?.match) {
+            matches.push({ ...parsedProject.match, type: 'project' })
+        }
+
+        if (matches.length === 0) {
+            return [{ text: value, type: 'text' }]
+        }
+
+        // Sort matches by start position
+        matches.sort((a, b) => a.start - b.start)
+
+        const result = []
+        let pos = 0
+
+        for (const match of matches) {
+            // Add text before this match
+            if (pos < match.start) {
+                result.push({ text: value.slice(pos, match.start), type: 'text' })
+            }
+            // Add the match
+            result.push({
+                text: value.slice(match.start, match.end),
+                type: match.type,
+            })
+            pos = match.end
+        }
+
+        // Add remaining text
+        if (pos < value.length) {
+            result.push({ text: value.slice(pos), type: 'text' })
+        }
+
+        // Debug logging
+        if (value.includes('#list 2 de')) {
+            console.log('AddTask segments debug:', {
+                value,
+                matches,
+                segments: result,
+                totalLength: result.reduce((sum, s) => sum + s.text.length, 0),
+                valueLength: value.length,
+            })
+        }
+
+        return result
+    })
+
     const showPlaceholder = $derived(!value)
 </script>
 
@@ -34,12 +83,16 @@
         <div class="input-overlay" aria-hidden="true">
             {#if showPlaceholder}
                 <span class="placeholder">{placeholder}</span>
-            {:else if match}
-                <span>{before}</span><span class="date-highlight"
-                    >{matchedText}</span
-                ><span>{after}</span>
             {:else}
-                <span>{value}</span>
+                {#each segments as segment}
+                    {#if segment.type === 'date'}
+                        <span class="date-highlight">{segment.text}</span>
+                    {:else if segment.type === 'project'}
+                        <span class="project-highlight">{segment.text}</span>
+                    {:else}
+                        <span>{segment.text}</span>
+                    {/if}
+                {/each}
             {/if}
         </div>
         <input
@@ -89,6 +142,9 @@
         color: var(--txt-3);
     }
     .date-highlight {
+        color: var(--txt-1);
+    }
+    .project-highlight {
         color: var(--txt-1);
     }
     .add-task-input {

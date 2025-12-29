@@ -159,6 +159,11 @@ class GoogleTasksBackendExtension extends TaskBackend {
                         )
                     }
 
+                    // Handle empty responses (e.g., DELETE requests)
+                    if (retryResponse.status === 204 || retryResponse.headers.get('content-length') === '0') {
+                        return null
+                    }
+
                     return retryResponse.json()
                 } catch (error) {
                     // Token refresh failed, user needs to sign in again
@@ -172,6 +177,11 @@ class GoogleTasksBackendExtension extends TaskBackend {
             throw new Error(
                 `API request failed: ${response.status} ${response.statusText}`
             )
+        }
+
+        // Handle empty responses (e.g., DELETE requests)
+        if (response.status === 204 || response.headers.get('content-length') === '0') {
+            return null
         }
 
         return response.json()
@@ -341,7 +351,7 @@ class GoogleTasksBackendExtension extends TaskBackend {
      * Add a new task
      * Note: Google Tasks API only supports dates, not times
      */
-    async addTask(content, due) {
+    async addTask(content, due, tasklistId) {
         const taskData = { title: content }
         if (due) {
             // Google Tasks only supports date (YYYY-MM-DD), strip time if present
@@ -349,8 +359,10 @@ class GoogleTasksBackendExtension extends TaskBackend {
             taskData.due = dateOnly + 'T00:00:00.000Z'
         }
 
+        const targetListId = tasklistId || this.defaultTasklistId
+
         const result = await this.apiRequest(
-            `/lists/${this.defaultTasklistId}/tasks`,
+            `/lists/${targetListId}/tasks`,
             {
                 method: 'POST',
                 body: JSON.stringify(taskData),

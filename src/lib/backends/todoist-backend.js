@@ -267,7 +267,7 @@ class TodoistBackend extends TaskBackend {
     /**
      * Add a new task
      */
-    async addTask(content, due) {
+    async addTask(content, due, projectId) {
         const tempId = crypto.randomUUID()
         const commands = [
             {
@@ -283,6 +283,7 @@ class TodoistBackend extends TaskBackend {
                               },
                           }
                         : {}),
+                    ...(projectId ? { project_id: projectId } : {}),
                 },
             },
         ]
