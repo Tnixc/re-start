@@ -32,7 +32,10 @@ if (browser === 'chrome') {
 } else if (browser === 'firefox') {
     // Remove Chrome-specific oauth2 configuration
     delete manifest.oauth2
-    // Firefox doesn't support chrome.identity.getAuthToken
+    // Remove identity permission - Firefox doesn't support chrome.identity.getAuthToken
+    if (manifest.permissions) {
+        manifest.permissions = manifest.permissions.filter(p => p !== 'identity')
+    }
 }
 
 // Ensure dist directory exists
