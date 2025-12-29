@@ -45,7 +45,10 @@
         for (const match of matches) {
             // Add text before this match
             if (pos < match.start) {
-                result.push({ text: value.slice(pos, match.start), type: 'text' })
+                result.push({
+                    text: value.slice(pos, match.start),
+                    type: 'text',
+                })
             }
             // Add the match
             result.push({
@@ -131,10 +134,10 @@
         color: var(--txt-3);
     }
     .date-highlight {
-        color: var(--txt-1);
+        color: var(--txt-3);
     }
     .project-highlight {
-        color: var(--txt-1);
+        color: var(--txt-3);
     }
     .add-task-input {
         flex: 1;
