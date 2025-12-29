@@ -60,17 +60,6 @@
             result.push({ text: value.slice(pos), type: 'text' })
         }
 
-        // Debug logging
-        if (value.includes('#list 2 de')) {
-            console.log('AddTask segments debug:', {
-                value,
-                matches,
-                segments: result,
-                totalLength: result.reduce((sum, s) => sum + s.text.length, 0),
-                valueLength: value.length,
-            })
-        }
-
         return result
     })
 

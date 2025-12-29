@@ -505,7 +505,13 @@ export function parseSmartDate(input, maybeNow, maybeOptions) {
     }
 }
 
-export function stripDateMatch(text, match) {
+/**
+ * Strip any match from text (generic utility for both date and project matches)
+ * @param {string} text - The original text
+ * @param {Object} match - Match object with {start, end}
+ * @returns {string} Text with match removed
+ */
+export function stripMatch(text, match) {
     if (!match) return text.trim()
     const before = text.slice(0, match.start).trimEnd()
     const after = text.slice(match.end).trimStart()
@@ -513,6 +519,9 @@ export function stripDateMatch(text, match) {
     if (!after) return before
     return `${before} ${after}`
 }
+
+// Backwards compatibility
+export const stripDateMatch = stripMatch
 
 export function formatTaskDue(date, hasTime) {
     if (!date) return null

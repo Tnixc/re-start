@@ -29,44 +29,46 @@
     )
 
     // Derived date match - parse from text AFTER stripping project
+    // To avoid false matches across the project boundary (e.g., "dec #project 12" matching "dec 12"),
+    // we parse the left and right halves separately when a project is present
     let parsedDate = $derived.by(() => {
-        let textForDateParsing = newTaskContent
-
-        // If there's a project match, strip it first
-        if (parsedProject?.match) {
-            textForDateParsing = stripProjectMatch(
-                newTaskContent,
-                parsedProject.match
-            )
+        if (!parsedProject?.match) {
+            // No project match, parse entire text
+            return parseSmartDate(newTaskContent, {
+                dateFormat: settings.dateFormat,
+            })
         }
 
-        const dateResult = parseSmartDate(textForDateParsing, {
+        // Split around project match and try each half
+        const leftHalf = newTaskContent.slice(0, parsedProject.match.start).trimEnd()
+        const rightHalf = newTaskContent.slice(parsedProject.match.end).trimStart()
+
+        // Try left half first
+        const leftResult = parseSmartDate(leftHalf, {
             dateFormat: settings.dateFormat,
         })
+        if (leftResult) {
+            return leftResult // positions already correct for original text
+        }
 
-        // If we stripped a project and found a date, find where it is in the original text
-        if (dateResult?.match && parsedProject?.match) {
-            const dateText = textForDateParsing.slice(
-                dateResult.match.start,
-                dateResult.match.end
-            )
-
-            // Find this date text in the original, searching after the project match
-            const searchStart = parsedProject.match.end
-            const foundIndex = newTaskContent.indexOf(dateText, searchStart)
-
-            if (foundIndex !== -1) {
-                dateResult.match = {
-                    start: foundIndex,
-                    end: foundIndex + dateText.length,
-                }
-            } else {
-                // Couldn't find date in original text, don't highlight it
-                return null
+        // Try right half
+        const rightResult = parseSmartDate(rightHalf, {
+            dateFormat: settings.dateFormat,
+        })
+        if (rightResult) {
+            // Offset positions to account for stripped whitespace and project
+            const rightStartOffset = parsedProject.match.end +
+                (newTaskContent.slice(parsedProject.match.end).length - rightHalf.length)
+            return {
+                ...rightResult,
+                match: {
+                    start: rightResult.match.start + rightStartOffset,
+                    end: rightResult.match.end + rightStartOffset,
+                },
             }
         }
 
-        return dateResult
+        return null
     })
 
     function handleVisibilityChange() {
@@ -185,18 +187,18 @@
         let due = null
         let projectId = null
 
-        // Strip date match
-        if (parsedDate?.match) {
-            const cleaned = stripDateMatch(content, parsedDate.match)
-            content = cleaned || content
-            due = formatTaskDue(parsedDate.date, parsedDate.hasTime)
-        }
-
-        // Strip project match
+        // Strip project match first (matches parsing precedence)
         if (parsedProject?.match) {
             const cleaned = stripProjectMatch(content, parsedProject.match)
             content = cleaned || content
             projectId = parsedProject.projectId
+        }
+
+        // Then strip date match
+        if (parsedDate?.match) {
+            const cleaned = stripDateMatch(content, parsedDate.match)
+            content = cleaned || content
+            due = formatTaskDue(parsedDate.date, parsedDate.hasTime)
         }
 
         try {
