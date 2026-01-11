@@ -289,6 +289,24 @@ class TodoistBackend extends TaskBackend {
     }
 
     /**
+     * Edit a task's content/title in Todoist via sync commands
+     */
+    async editTaskName(taskId, newContent) {
+        const commands = [
+            {
+                type: 'item_update',
+                uuid: crypto.randomUUID(),
+                args: {
+                    id: taskId,
+                    content: newContent,
+                },
+            },
+        ]
+
+        return this.executeCommands(commands)
+    }
+
+    /**
      * Execute sync commands
      */
     async executeCommands(commands) {

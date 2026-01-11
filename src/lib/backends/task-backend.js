@@ -67,6 +67,16 @@ class TaskBackend {
     }
 
     /**
+     * Edit a task's name/content
+     * @param {string} taskId - ID of the task to edit
+     * @param {string} newContent - New content/title for the task
+     * @returns {Promise<void>}
+     */
+    async editTaskName(taskId, newContent) {
+        throw new Error('editTaskName() must be implemented by subclass')
+    }
+
+    /**
      * Clear all local data/cache
      * @returns {void}
      */

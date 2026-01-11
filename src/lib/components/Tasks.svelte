@@ -23,6 +23,7 @@
     let addingTask = $state(false)
     let togglingTasks = $state(new Set())
     let addTaskComponent = $state()
+    let editBuffer = $state({})
 
     // Derived project match
     let parsedProject = $derived(
@@ -92,7 +93,8 @@
         const isInputFocused =
             activeElement?.tagName === 'INPUT' ||
             activeElement?.tagName === 'TEXTAREA' ||
-            (activeElement instanceof HTMLElement && activeElement.isContentEditable)
+            (activeElement instanceof HTMLElement &&
+                activeElement.isContentEditable)
 
         if (
             addTaskComponent &&
@@ -178,6 +180,12 @@
             await api.sync()
             tasks = api.getTasks()
 
+            // Initialize edit buffer for inline editing
+            editBuffer = {}
+            tasks.forEach((t) => {
+                editBuffer[t.id] = t.content || ''
+            })
+
             // Update available projects/lists
             if (settings.taskBackend === 'todoist') {
                 availableProjects = (api.data?.projects || []).map((p) => ({
@@ -204,6 +212,21 @@
             console.error('task sync failed:', err)
         } finally {
             if (showSyncing) syncing = false
+        }
+    }
+
+    async function commitEdit(taskId) {
+        if (!api) return
+        const newContent = (editBuffer[taskId] ?? '').trim()
+        const original = tasks.find((t) => t.id === taskId)?.content ?? ''
+        if (newContent === original) return
+
+        try {
+            await api.editTaskName(taskId, newContent)
+            await loadTasks()
+        } catch (err) {
+            console.error('failed to edit task name:', err)
+            await loadTasks()
         }
     }
 
@@ -436,9 +459,20 @@
                                     >#{task.project_name}</span
                                 >
                             {/if}
-                            <span class="task-title"
-                                >{task.content || '(no content)'}</span
-                            >
+                            <span class="task-title">
+                                <input
+                                    class="task-title-input"
+                                    aria-label="edit task name"
+                                    bind:value={editBuffer[task.id]}
+                                    onblur={() => commitEdit(task.id)}
+                                    onkeydown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault()
+                                            e.target.blur()
+                                        }
+                                    }}
+                                />
+                            </span>
                             {#if task.due_date}
                                 <span
                                     class="task-due"
@@ -495,8 +529,18 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
+    .task-title-input {
+        all: unset;
+        display: inline-block;
+        width: 100%;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
     .task-due {
         color: var(--txt-3);
+        margin-left: 3ch;
     }
     .task-project {
         color: var(--txt-3);

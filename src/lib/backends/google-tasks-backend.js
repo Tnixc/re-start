@@ -107,7 +107,6 @@ class GoogleTasksBackendExtension extends TaskBackend {
         this.clearLocalData()
     }
 
-
     /**
      * Make an authenticated API request
      * Chrome identity API automatically handles token refresh
@@ -160,7 +159,10 @@ class GoogleTasksBackendExtension extends TaskBackend {
                     }
 
                     // Handle empty responses (e.g., DELETE requests)
-                    if (retryResponse.status === 204 || retryResponse.headers.get('content-length') === '0') {
+                    if (
+                        retryResponse.status === 204 ||
+                        retryResponse.headers.get('content-length') === '0'
+                    ) {
                         return null
                     }
 
@@ -180,7 +182,10 @@ class GoogleTasksBackendExtension extends TaskBackend {
         }
 
         // Handle empty responses (e.g., DELETE requests)
-        if (response.status === 204 || response.headers.get('content-length') === '0') {
+        if (
+            response.status === 204 ||
+            response.headers.get('content-length') === '0'
+        ) {
             return null
         }
 
@@ -360,13 +365,10 @@ class GoogleTasksBackendExtension extends TaskBackend {
 
         const targetListId = tasklistId || this.defaultTasklistId
 
-        const result = await this.apiRequest(
-            `/lists/${targetListId}/tasks`,
-            {
-                method: 'POST',
-                body: JSON.stringify(taskData),
-            }
-        )
+        const result = await this.apiRequest(`/lists/${targetListId}/tasks`, {
+            method: 'POST',
+            body: JSON.stringify(taskData),
+        })
 
         return result
     }
@@ -407,6 +409,24 @@ class GoogleTasksBackendExtension extends TaskBackend {
                     status: 'needsAction',
                     completed: null,
                 }),
+            }
+        )
+
+        return result
+    }
+
+    /**
+     * Edit a task's title/content in Google Tasks
+     */
+    async editTaskName(taskId, newContent) {
+        const task = this.data.tasks?.find((t) => t.id === taskId)
+        const tasklistId = task?.tasklistId ?? this.defaultTasklistId
+
+        const result = await this.apiRequest(
+            `/lists/${tasklistId}/tasks/${taskId}`,
+            {
+                method: 'PATCH',
+                body: JSON.stringify({ title: newContent }),
             }
         )
 

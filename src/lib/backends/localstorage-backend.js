@@ -193,6 +193,18 @@ class LocalStorageBackend extends TaskBackend {
     }
 
     /**
+     * Edit a task's name/content in local storage
+     */
+    async editTaskName(taskId, newContent) {
+        const task = this.data.items.find((item) => item.id === taskId)
+        if (task) {
+            task.content = newContent
+            this.saveData()
+        }
+        return Promise.resolve()
+    }
+
+    /**
      * Clear local cache (no-op for localStorage backend)
      * Note: Unlike Todoist which clears cache, LocalStorage IS the source of truth.
      * Clearing it would permanently delete user tasks, which is not equivalent behavior.
