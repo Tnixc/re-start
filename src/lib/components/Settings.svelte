@@ -228,17 +228,17 @@
                                     <div
                                         style="background-color: {themes[
                                             themeName
-                                        ].colors['--bg-1']}"
+                                        ].preview.bg}"
                                     ></div>
                                     <div
                                         style="background-color: {themes[
                                             themeName
-                                        ].colors['--txt-4']}"
+                                        ].preview.accent}"
                                     ></div>
                                     <div
                                         style="background-color: {themes[
                                             themeName
-                                        ].colors['--txt-2']}"
+                                        ].preview.text}"
                                     ></div>
                                 </div>
                                 <span class="theme-name"

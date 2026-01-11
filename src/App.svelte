@@ -1,7 +1,7 @@
 <script>
     import '@fontsource-variable/geist-mono'
     import { settings } from './lib/stores/settings-store.svelte.js'
-    import { themes } from './lib/config/themes.js'
+    import { defaultTheme } from './lib/config/themes.js'
     import Clock from './lib/components/Clock.svelte'
     import Links from './lib/components/Links.svelte'
     import Settings from './lib/components/Settings.svelte'
@@ -30,11 +30,7 @@
     }
 
     function applyTheme(themeName) {
-        const theme = themes[themeName] || themes['defaultTheme']
-        const root = document.documentElement
-        for (const [key, value] of Object.entries(theme.colors)) {
-            root.style.setProperty(key, value)
-        }
+        document.documentElement.className = 'theme-' + (themeName || defaultTheme)
     }
 
     $effect(() => {

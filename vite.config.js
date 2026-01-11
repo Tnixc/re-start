@@ -7,28 +7,56 @@ import path from 'path'
 // Read version from manifest.json at build time
 const manifest = JSON.parse(fs.readFileSync('./public/manifest.json', 'utf-8'))
 
-// Plugin to inject theme data into HTML
+// Plugin to inline theme CSS and inject theme switching script
 function injectThemeScript() {
     return {
         name: 'inject-theme-script',
         transformIndexHtml(html) {
-            const themesModule = fs.readFileSync('./src/lib/config/themes.js', 'utf-8')
+            // Read theme CSS file
+            const themesCSS = fs.readFileSync('./src/lib/config/themes.css', 'utf-8')
 
-            const themesMatch = themesModule.match(
-                /export const themes = ({[\s\S]*?})\s*export const themeNames/
-            )
+            // Read default theme from themes.js
+            const themesModule = fs.readFileSync('./src/lib/config/themes.js', 'utf-8')
             const defaultThemeMatch = themesModule.match(
                 /export const defaultTheme = ['"](.+?)['"]/
             )
 
-            if (!themesMatch || !defaultThemeMatch) {
-                console.error('Failed to extract theme data')
+            if (!defaultThemeMatch) {
+                console.error('Failed to extract default theme')
                 return html
             }
 
-            return html
-                .replace('__THEMES_DATA__', themesMatch[1])
-                .replace('__DEFAULT_THEME__', defaultThemeMatch[1])
+            const defaultTheme = defaultThemeMatch[1]
+
+            // Create inline styles with all themes
+            const styleTag = `<style>${themesCSS}</style>`
+
+            // Create simplified theme switching script
+            const themeScript = `<script>
+            (function() {
+                const defaultTheme = '${defaultTheme}';
+                try {
+                    const stored = localStorage.getItem('settings');
+                    let themeName = defaultTheme;
+                    if (stored) {
+                        const parsed = JSON.parse(stored);
+                        if (parsed.currentTheme) {
+                            themeName = parsed.currentTheme;
+                        }
+                    }
+                    document.documentElement.className = 'theme-' + themeName;
+                } catch (e) {
+                    document.documentElement.className = 'theme-' + defaultTheme;
+                }
+            })();
+            </script>`
+
+            // Replace the old script placeholder with new implementation
+            // Inject styles in head, and the script stays where it is
+            return html.replace(
+                /<script>[\s\S]*?__THEMES_DATA__[\s\S]*?<\/script>/,
+                themeScript
+            ).replace('</head>', `${styleTag}\n</head>`)
         },
     }
 }
