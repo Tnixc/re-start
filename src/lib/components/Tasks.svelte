@@ -181,10 +181,9 @@
             tasks = api.getTasks()
 
             // Initialize edit buffer for inline editing
-            editBuffer = {}
-            tasks.forEach((t) => {
-                editBuffer[t.id] = t.content || ''
-            })
+            editBuffer = Object.fromEntries(
+                tasks.map((t) => [t.id, t.content || ''])
+            )
 
             // Update available projects/lists
             if (settings.taskBackend === 'todoist') {
@@ -328,53 +327,46 @@
             dueDate.getDate()
         )
 
+        const msPerDay = 1000 * 60 * 60 * 24
         const diffTime = dueDateOnly.getTime() - today.getTime()
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+        const diffDays = Math.ceil(diffTime / msPerDay)
 
-        let dateString = ''
-
-        if (diffDays === -1) {
-            dateString = 'yesterday'
-        } else if (diffDays === 0) {
-            dateString = 'today'
-        } else if (diffDays === 1) {
-            dateString = 'tmrw'
-        } else if (diffDays > 1 && diffDays < 7) {
-            dateString = dueDate
-                .toLocaleDateString('en-US', {
-                    weekday: 'short',
-                })
-                .toLowerCase()
-        } else {
-            dateString = dueDate
-                .toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                })
-                .toLowerCase()
-        }
+        let dateString = getRelativeDateString(diffDays, dueDate)
 
         if (hasTime) {
-            let timeString
-            if (settings.timeFormat === '12hr') {
-                timeString = dueDate
-                    .toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true,
-                    })
-                    .toLowerCase()
-            } else {
-                timeString = dueDate.toLocaleTimeString('en-US', {
+            const use12Hour = settings.timeFormat === '12hr'
+            const timeString = dueDate
+                .toLocaleTimeString('en-US', {
                     hour: 'numeric',
                     minute: '2-digit',
-                    hour12: false,
+                    hour12: use12Hour,
                 })
-            }
+                .toLowerCase()
             dateString += ` ${timeString}`
         }
 
         return dateString
+    }
+
+    function getRelativeDateString(diffDays, dueDate) {
+        const isYesterday = diffDays === -1
+        const isToday = diffDays === 0
+        const isTomorrow = diffDays === 1
+        const isWithinWeek = diffDays >= 2 && diffDays < 7
+
+        if (isYesterday) return 'yesterday'
+        if (isToday) return 'today'
+        if (isTomorrow) return 'tmrw'
+
+        if (isWithinWeek) {
+            return dueDate
+                .toLocaleDateString('en-US', { weekday: 'short' })
+                .toLowerCase()
+        }
+
+        return dueDate
+            .toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            .toLowerCase()
     }
 
     onMount(() => {
