@@ -1,5 +1,5 @@
 import TaskBackend from './task-backend.js'
-import { isChrome } from '../browser-detect.js'
+import { isChrome } from '../utils/browser-detect.js'
 
 /**
  * Google Tasks API client for Chrome Extensions

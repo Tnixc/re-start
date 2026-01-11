@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseSmartDate } from '../date-matcher.js'
+import { parseSmartDate } from './date-matcher.js'
 
 const FIXED_NOW = new Date('2025-12-07T12:00:00Z')
 

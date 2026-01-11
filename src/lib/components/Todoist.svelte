@@ -1,13 +1,13 @@
 <script>
     import { onMount, onDestroy, untrack } from 'svelte'
     import TodoistAPI from '../todoist-api.js'
-    import { settings } from '../settings-store.svelte.js'
+    import { settings } from '../stores/settings-store.svelte.js'
     import AddTask from './AddTask.svelte'
     import {
         parseSmartDate,
         stripDateMatch,
         formatTodoistDue,
-    } from '../date-matcher.js'
+    } from '../utils/date-matcher.js'
 
     let api = null
     let tasks = $state([])

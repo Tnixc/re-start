@@ -1,5 +1,5 @@
 <script>
-    import { settings } from '../settings-store.svelte.js'
+    import { settings } from '../stores/settings-store.svelte.js'
 
     const columns = $derived.by(() => {
         const result = []

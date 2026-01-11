@@ -1,4 +1,4 @@
-import descriptions from '../assets/descriptions.json'
+import descriptions from '../../assets/descriptions.json'
 
 /**
  * OpenMeteo Weather API client with data processing utilities

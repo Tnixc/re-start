@@ -1,15 +1,15 @@
 <script>
     import '@fontsource-variable/geist-mono'
-    import { settings } from './lib/settings-store.svelte.js'
-    import { themes } from './lib/themes.js'
+    import { settings } from './lib/stores/settings-store.svelte.js'
+    import { themes } from './lib/config/themes.js'
     import Clock from './lib/components/Clock.svelte'
     import Links from './lib/components/Links.svelte'
     import Settings from './lib/components/Settings.svelte'
     import Stats from './lib/components/Stats.svelte'
     import Tasks from './lib/components/Tasks.svelte'
     import Weather from './lib/components/Weather.svelte'
-    import { saveSettings } from './lib/settings-store.svelte.js'
-    import { isChrome } from './lib/browser-detect.js'
+    import { saveSettings } from './lib/stores/settings-store.svelte.js'
+    import { isChrome } from './lib/utils/browser-detect.js'
 
     let showSettings = $state(false)
 

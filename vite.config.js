@@ -12,7 +12,7 @@ function injectThemeScript() {
     return {
         name: 'inject-theme-script',
         transformIndexHtml(html) {
-            const themesModule = fs.readFileSync('./src/lib/themes.js', 'utf-8')
+            const themesModule = fs.readFileSync('./src/lib/config/themes.js', 'utf-8')
 
             const themesMatch = themesModule.match(
                 /export const themes = ({[\s\S]*?})\s*export const themeNames/

@@ -1,15 +1,15 @@
 <script>
     import { onMount, onDestroy, untrack } from 'svelte'
     import { createTaskBackend } from '../backends/index.js'
-    import { settings } from '../settings-store.svelte.js'
-    import { isChrome } from '../browser-detect.js'
+    import { settings } from '../stores/settings-store.svelte.js'
+    import { isChrome } from '../utils/browser-detect.js'
     import AddTask from './AddTask.svelte'
     import {
         parseSmartDate,
         stripDateMatch,
         formatTaskDue,
-    } from '../date-matcher.js'
-    import { parseProjectMatch, stripProjectMatch } from '../project-matcher.js'
+    } from '../utils/date-matcher.js'
+    import { parseProjectMatch, stripProjectMatch } from '../utils/project-matcher.js'
 
     let api = null
     let tasks = $state([])

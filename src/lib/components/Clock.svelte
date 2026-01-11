@@ -1,6 +1,6 @@
 <script>
     import { onMount, onDestroy } from 'svelte'
-    import { settings } from '../settings-store.svelte.js'
+    import { settings } from '../stores/settings-store.svelte.js'
 
     let currentHrs = $state('')
     let currentMin = $state('')

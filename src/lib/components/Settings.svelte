@@ -4,12 +4,12 @@
         saveSettings,
         settings,
         resetSettings,
-    } from '../settings-store.svelte.js'
-    import { themeNames, themes } from '../themes.js'
-    import RadioButton from './RadioButton.svelte'
-    import Checkbox from './Checkbox.svelte'
+    } from '../stores/settings-store.svelte.js'
+    import { themeNames, themes } from '../config/themes.js'
+    import RadioButton from './ui/RadioButton.svelte'
+    import Checkbox from './ui/Checkbox.svelte'
     import { createTaskBackend } from '../backends/index.js'
-    import { isChrome } from '../browser-detect.js'
+    import { isChrome } from '../utils/browser-detect.js'
 
     let { showSettings = false, closeSettings } = $props()
 

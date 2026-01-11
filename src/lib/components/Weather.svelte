@@ -1,7 +1,7 @@
 <script>
     import { onMount, onDestroy, untrack } from 'svelte'
-    import WeatherAPI from '../weather-api.js'
-    import { settings } from '../settings-store.svelte.js'
+    import WeatherAPI from '../api/weather-api.js'
+    import { settings } from '../stores/settings-store.svelte.js'
 
     let { class: className = '' } = $props()
 
