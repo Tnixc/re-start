@@ -211,15 +211,17 @@ class GoogleTasksBackendExtension extends TaskBackend {
                     (tl) => tl.id === this.defaultTasklistId
                 )
                 if (!this.defaultTasklistId || !hasValidTasklist) {
-                    this.defaultTasklistId =
-                        newTasklists[0]?.id ?? '@default'
+                    this.defaultTasklistId = newTasklists[0]?.id ?? '@default'
                     try {
                         localStorage.setItem(
                             this.tasklistIdKey,
                             this.defaultTasklistId
                         )
                     } catch (error) {
-                        console.error('failed to save default tasklist ID:', error)
+                        console.error(
+                            'failed to save default tasklist ID:',
+                            error
+                        )
                     }
                 }
             }
@@ -231,19 +233,17 @@ class GoogleTasksBackendExtension extends TaskBackend {
                     Date.now() - 24 * 60 * 60 * 1000
                 ).toISOString()
 
-                const taskPromises = newTasklists.map(
-                    async (tasklist) => {
-                        const data = await this.apiRequest(
-                            `/lists/${tasklist.id}/tasks?showCompleted=true&showHidden=true&showAssigned=true&maxResults=100`
-                        )
-                        // Add tasklist info to each task
-                        return (data.items || []).map((task) => ({
-                            ...task,
-                            tasklistId: tasklist.id,
-                            tasklistName: tasklist.title,
-                        }))
-                    }
-                )
+                const taskPromises = newTasklists.map(async (tasklist) => {
+                    const data = await this.apiRequest(
+                        `/lists/${tasklist.id}/tasks?showCompleted=true&showHidden=true&showAssigned=true&maxResults=100`
+                    )
+                    // Add tasklist info to each task
+                    return (data.items || []).map((task) => ({
+                        ...task,
+                        tasklistId: tasklist.id,
+                        tasklistName: tasklist.title,
+                    }))
+                })
 
                 const taskArrays = await Promise.all(taskPromises)
                 newTasks = taskArrays.flat()
@@ -272,9 +272,14 @@ class GoogleTasksBackendExtension extends TaskBackend {
             try {
                 localStorage.setItem(this.dataKey, JSON.stringify(this.data))
             } catch (error) {
-                console.error('failed to save google tasks data to localStorage:', error)
+                console.error(
+                    'failed to save google tasks data to localStorage:',
+                    error
+                )
                 if (error.name === 'QuotaExceededError') {
-                    throw new Error('localStorage quota exceeded - please clear some data')
+                    throw new Error(
+                        'localStorage quota exceeded - please clear some data'
+                    )
                 }
                 throw error
             }

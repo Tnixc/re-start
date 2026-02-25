@@ -13,10 +13,16 @@ function injectThemeScript() {
         name: 'inject-theme-script',
         transformIndexHtml(html) {
             // Read theme CSS file
-            const themesCSS = fs.readFileSync('./src/lib/config/themes.css', 'utf-8')
+            const themesCSS = fs.readFileSync(
+                './src/lib/config/themes.css',
+                'utf-8'
+            )
 
             // Read default theme from themes.js
-            const themesModule = fs.readFileSync('./src/lib/config/themes.js', 'utf-8')
+            const themesModule = fs.readFileSync(
+                './src/lib/config/themes.js',
+                'utf-8'
+            )
             const defaultThemeMatch = themesModule.match(
                 /export const defaultTheme = ['"](.+?)['"]/
             )
@@ -60,10 +66,12 @@ function injectThemeScript() {
 
             // Replace the old script placeholder with new implementation
             // Inject styles in head, and the script stays where it is
-            return html.replace(
-                /<script>[\s\S]*?__THEMES_DATA__[\s\S]*?<\/script>/,
-                themeScript
-            ).replace('</head>', `${styleTag}\n</head>`)
+            return html
+                .replace(
+                    /<script>[\s\S]*?__THEMES_DATA__[\s\S]*?<\/script>/,
+                    themeScript
+                )
+                .replace('</head>', `${styleTag}\n</head>`)
         },
     }
 }
@@ -94,9 +102,12 @@ function buildManifest() {
             const browser = outDir.includes('chrome') ? 'chrome' : 'firefox'
 
             try {
-                execSync(`node scripts/build-manifest.js ${browser} ${outDir}`, {
-                    stdio: 'inherit'
-                })
+                execSync(
+                    `node scripts/build-manifest.js ${browser} ${outDir}`,
+                    {
+                        stdio: 'inherit',
+                    }
+                )
             } catch (error) {
                 console.error('Failed to build manifest:', error.message)
             }
@@ -107,7 +118,12 @@ function buildManifest() {
 // https://vite.dev/config/
 export default defineConfig({
     base: './',
-    plugins: [svelte(), injectThemeScript(), excludeManifest(), buildManifest()],
+    plugins: [
+        svelte(),
+        injectThemeScript(),
+        excludeManifest(),
+        buildManifest(),
+    ],
     define: {
         __APP_VERSION__: JSON.stringify(manifest.version),
     },

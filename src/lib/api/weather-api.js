@@ -160,7 +160,8 @@ class WeatherAPI {
         }
 
         if (forecastMode === 'daily') {
-            baseParams.daily = 'weather_code,temperature_2m_max,temperature_2m_min'
+            baseParams.daily =
+                'weather_code,temperature_2m_max,temperature_2m_min'
             baseParams.forecast_days = '7'
         } else {
             baseParams.hourly = 'temperature_2m,weather_code,is_day'
@@ -298,7 +299,9 @@ class WeatherAPI {
      */
     _formatDate(dateString) {
         const date = new Date(dateString + 'T00:00:00')
-        return date.toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase()
+        return date
+            .toLocaleDateString('en-US', { weekday: 'short' })
+            .toLowerCase()
     }
 
     /**

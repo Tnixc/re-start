@@ -87,7 +87,9 @@ class TodoistBackend extends TaskBackend {
         } catch (error) {
             console.error('failed to save todoist data to localStorage:', error)
             if (error.name === 'QuotaExceededError') {
-                throw new Error('localStorage quota exceeded - please clear some data')
+                throw new Error(
+                    'localStorage quota exceeded - please clear some data'
+                )
             }
             throw error
         }
@@ -197,8 +199,10 @@ class TodoistBackend extends TaskBackend {
 
             // If both have no due dates, non-project tasks come first
             if (!a.due_date && !b.due_date) {
-                const aHasProject = a.project_id && a.project_name && a.project_name !== 'Inbox'
-                const bHasProject = b.project_id && b.project_name && b.project_name !== 'Inbox'
+                const aHasProject =
+                    a.project_id && a.project_name && a.project_name !== 'Inbox'
+                const bHasProject =
+                    b.project_id && b.project_name && b.project_name !== 'Inbox'
 
                 if (aHasProject !== bHasProject) {
                     return aHasProject ? 1 : -1

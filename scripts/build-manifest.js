@@ -8,7 +8,7 @@ const manifestPath = './public/manifest.json'
 // OAuth2 client IDs
 const CLIENT_IDS = {
     dev: '489393578728-r6p53q4oe7ngcm6r4kmtgbk17s2cgpk8.apps.googleusercontent.com',
-    prod: '489393578728-s8v9trudldppumhduidbko2v82i79hv5.apps.googleusercontent.com'
+    prod: '489393578728-s8v9trudldppumhduidbko2v82i79hv5.apps.googleusercontent.com',
 }
 
 // Read the source manifest
@@ -34,7 +34,9 @@ if (browser === 'chrome') {
     delete manifest.oauth2
     // Remove identity permission - Firefox doesn't support chrome.identity.getAuthToken
     if (manifest.permissions) {
-        manifest.permissions = manifest.permissions.filter(p => p !== 'identity')
+        manifest.permissions = manifest.permissions.filter(
+            (p) => p !== 'identity'
+        )
     }
 }
 

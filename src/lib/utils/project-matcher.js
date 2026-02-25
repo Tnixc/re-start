@@ -67,7 +67,10 @@ export function parseProjectMatch(input, projects) {
 
                 // Get next word
                 let wordEnd = pos
-                while (wordEnd < input.length && !/[\s#]/.test(input[wordEnd])) {
+                while (
+                    wordEnd < input.length &&
+                    !/[\s#]/.test(input[wordEnd])
+                ) {
                     wordEnd++
                 }
 
