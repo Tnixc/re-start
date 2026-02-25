@@ -1,7 +1,7 @@
 <script>
     import '@fontsource-variable/geist-mono'
     import { settings } from './lib/stores/settings-store.svelte.js'
-    import { defaultTheme } from './lib/config/themes.js'
+    import { defaultTheme, defaultCustomColors } from './lib/config/themes.js'
     import Clock from './lib/components/Clock.svelte'
     import Links from './lib/components/Links.svelte'
     import Settings from './lib/components/Settings.svelte'
@@ -33,6 +33,21 @@
         document.documentElement.className = 'theme-' + (themeName || defaultTheme)
     }
 
+    function applyCustomThemeColors(colors) {
+        let styleEl = document.getElementById('custom-theme-vars')
+        if (!styleEl) {
+            styleEl = document.createElement('style')
+            styleEl.id = 'custom-theme-vars'
+            document.head.appendChild(styleEl)
+        }
+        const c = colors || defaultCustomColors
+        styleEl.textContent = `:root.theme-custom {
+            --bg-1: ${c.bg1}; --bg-2: ${c.bg2}; --bg-3: ${c.bg3};
+            --txt-1: ${c.txt1}; --txt-2: ${c.txt2}; --txt-3: ${c.txt3};
+            --txt-4: ${c.txt4}; --txt-err: ${c.txtErr};
+        }`
+    }
+
     $effect(() => {
         const fontName = settings.font?.trim() || 'Geist Mono Variable'
         document.documentElement.style.setProperty(
@@ -43,6 +58,10 @@
 
     $effect(() => {
         applyTheme(settings.currentTheme)
+    })
+
+    $effect(() => {
+        applyCustomThemeColors(settings.customThemeColors)
     })
 
     $effect(() => {

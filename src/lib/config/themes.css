@@ -1,7 +1,7 @@
 /* Theme definitions for re-start */
 /* Each theme is a class that can be applied to the root element */
 
-.theme-default {
+:root.theme-default {
     --bg-1: oklch(19% 0 0);
     --bg-2: oklch(23% 0 0);
     --bg-3: oklch(27% 0 0);
@@ -12,7 +12,7 @@
     --txt-err: oklch(70% 0.11 0);
 }
 
-.theme-rose-pine {
+:root.theme-rose-pine {
     --bg-1: #191724;
     --bg-2: #1f1d2e;
     --bg-3: #26233a;
@@ -23,7 +23,7 @@
     --txt-err: #eb6f92;
 }
 
-.theme-catppuccin-mocha {
+:root.theme-catppuccin-mocha {
     --bg-1: #181825;
     --bg-2: #1e1e2e;
     --bg-3: #313244;
@@ -34,7 +34,7 @@
     --txt-err: #f38ba8;
 }
 
-.theme-catppuccin-latte {
+:root.theme-catppuccin-latte {
     --bg-1: #eff1f5;
     --bg-2: #dce0e8;
     --bg-3: #ccd0da;
@@ -45,7 +45,7 @@
     --txt-err: #d20f39;
 }
 
-.theme-nord {
+:root.theme-nord {
     --bg-1: #2e3440;
     --bg-2: #3b4252;
     --bg-3: #434c5e;
@@ -56,7 +56,7 @@
     --txt-err: #bf616a;
 }
 
-.theme-tokyo-night {
+:root.theme-tokyo-night {
     --bg-1: #1a1b26;
     --bg-2: #24283b;
     --bg-3: hsl(230, 24%, 21%);
@@ -67,7 +67,7 @@
     --txt-err: #f7768e;
 }
 
-.theme-gruvbox {
+:root.theme-gruvbox {
     --bg-1: #282828;
     --bg-2: #3c3836;
     --bg-3: #504945;
@@ -78,7 +78,7 @@
     --txt-err: #fb4934;
 }
 
-.theme-everforest {
+:root.theme-everforest {
     --bg-1: #272e33;
     --bg-2: #2e383c;
     --bg-3: #374145;

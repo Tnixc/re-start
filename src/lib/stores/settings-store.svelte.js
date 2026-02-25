@@ -1,3 +1,5 @@
+import { defaultCustomColors } from '../config/themes.js'
+
 let defaultSettings = {
     font: 'Geist Mono Variable',
     currentTheme: 'default',
@@ -33,6 +35,7 @@ let defaultSettings = {
         { title: 'twitter', url: 'https://x.com' },
         { title: 'feedly', url: 'https://feedly.com' },
     ],
+    customThemeColors: { ...defaultCustomColors },
     customCSS: '',
     showClock: true,
     showStats: true,
@@ -46,7 +49,11 @@ function loadSettings() {
         const stored = localStorage.getItem('settings')
         if (stored) {
             const parsed = JSON.parse(stored)
-            return { ...defaultSettings, ...parsed }
+            const merged = { ...defaultSettings, ...parsed }
+            if (!merged.customThemeColors) {
+                merged.customThemeColors = { ...defaultCustomColors }
+            }
+            return merged
         }
     } catch (error) {
         console.error('failed to load settings from localStorage:', error)
