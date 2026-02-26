@@ -389,11 +389,11 @@
     function getRelativeDateString(diffDays, dueDate) {
         if (diffDays === -1) return 'yesterday'
         if (diffDays === 0) return 'today'
-        if (diffDays === 1) return 'tmrw'
+        if (diffDays === 1) return 'tomorrow'
 
         if (diffDays >= 2 && diffDays < 7) {
             return dueDate
-                .toLocaleDateString('en-US', { weekday: 'short' })
+                .toLocaleDateString('en-US', { weekday: 'long' })
                 .toLowerCase()
         }
 

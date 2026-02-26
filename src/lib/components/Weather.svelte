@@ -163,12 +163,12 @@
             <div class="stats">
                 <div class="col">
                     <div>
-                        humi <span class="bright"
+                        humidity <span class="bright"
                             >{current.relative_humidity_2m}%</span
                         >
                     </div>
                     <div>
-                        prec <span class="bright"
+                        precipitation <span class="bright"
                             >{current.precipitation_probability}%</span
                         >
                     </div>
@@ -180,7 +180,7 @@
                         >
                     </div>
                     <div>
-                        feel <span class="bright"
+                        feels like <span class="bright"
                             >{current.apparent_temperature}°</span
                         >
                     </div>

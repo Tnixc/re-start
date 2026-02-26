@@ -155,11 +155,11 @@
         } else if (diffDays === 0) {
             dateString = 'today'
         } else if (diffDays === 1) {
-            dateString = 'tmrw'
+            dateString = 'tomorrow'
         } else if (diffDays > 1 && diffDays < 7) {
             dateString = dueDate
                 .toLocaleDateString('en-US', {
-                    weekday: 'short',
+                    weekday: 'long',
                 })
                 .toLowerCase()
         } else {
