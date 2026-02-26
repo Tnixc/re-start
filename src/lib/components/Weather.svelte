@@ -157,8 +157,10 @@
         {#if error}
             <div class="error">{error}</div>
         {:else if current}
-            <div class="temp">{current.temperature_2m}°</div>
-            <div class="description">{current.description}</div>
+            <div class="weather-row-1">
+                <div class="temp">{current.temperature_2m}°</div>
+                <div class="description">{current.description}</div>
+            </div>
             <br />
             <div class="stats">
                 <div class="col">
