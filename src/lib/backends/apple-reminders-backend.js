@@ -50,7 +50,6 @@ class AppleRemindersBackend extends TaskBackend {
 
                 return {
                     ...item,
-                    project_name: '',
                     label_names: [],
                     due_date: dueDate,
                     has_time: hasTime,

@@ -36,6 +36,7 @@ let defaultSettings = {
         { title: 'feedly', url: 'https://feedly.com' },
     ],
     customThemeColors: { ...defaultCustomColors },
+    taskListColors: {},
     customCSS: '',
     showClock: true,
     showStats: true,

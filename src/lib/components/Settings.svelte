@@ -27,6 +27,22 @@
 	let googleTasksApi = $state(null)
 	let signingIn = $state(false)
 	let signInError = $state('')
+	let newListName = $state('')
+
+	function addListColor() {
+		const name = newListName.trim()
+		if (!name) return
+		settings.taskListColors = {
+			...settings.taskListColors,
+			[name]: '#888888',
+		}
+		newListName = ''
+	}
+
+	function removeListColor(name) {
+		const { [name]: _, ...rest } = settings.taskListColors
+		settings.taskListColors = rest
+	}
 
 	async function handleGoogleSignIn() {
 		try {
@@ -469,6 +485,64 @@
 					</button>
 				</div>
 			{/if}
+
+			<div class="group">
+				<div class="setting-label">list colors</div>
+				{#if Object.keys(settings.taskListColors || {}).length > 0}
+					<div class="list-colors-grid">
+						{#each Object.entries(settings.taskListColors) as [name, color]}
+							<div class="color-input-row">
+								<input
+									type="color"
+									value={color}
+									oninput={(e) => {
+										settings.taskListColors = {
+											...settings.taskListColors,
+											[name]: e.target.value,
+										}
+									}}
+								/>
+								<label>{name}</label>
+								<input
+									type="text"
+									value={color}
+									oninput={(e) => {
+										settings.taskListColors = {
+											...settings.taskListColors,
+											[name]: e.target.value,
+										}
+									}}
+									class="color-text"
+								/>
+								<button
+									class="task-list-remove"
+									onclick={() => removeListColor(name)}
+								>
+									x
+								</button>
+							</div>
+						{/each}
+					</div>
+				{/if}
+				<div class="list-color-add">
+					<input
+						type="text"
+						bind:value={newListName}
+						placeholder="list name"
+						onkeydown={(e) => {
+							if (e.key === 'Enter') {
+								e.preventDefault()
+								addListColor()
+							}
+						}}
+					/>
+					<button class="button" onclick={addListColor}>
+						<span class="bracket">[</span><span class="action-text"
+							>add</span
+						><span class="bracket">]</span>
+					</button>
+				</div>
+			</div>
 
 			<div class="group">
 				<div class="setting-label">weather forecast</div>
@@ -971,5 +1045,32 @@
 		font-size: 0.875rem;
 		font-family: var(--font-family);
 		color: inherit;
+	}
+	.list-colors-grid {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		margin-bottom: 0.5rem;
+	}
+	.list-colors-grid .color-input-row label {
+		width: auto;
+		flex: 1;
+	}
+	.task-list-remove {
+		padding: 0 0.25rem;
+		color: var(--txt-3);
+
+		&:hover {
+			color: var(--txt-err);
+		}
+	}
+	.list-color-add {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+
+		input {
+			flex: 1;
+		}
 	}
 </style>

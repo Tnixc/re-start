@@ -37,6 +37,18 @@
     let addTaskComponent = $state()
     let editBuffer = $state({})
 
+    let listColorCSS = $derived.by(() => {
+        const colors = settings.taskListColors || {}
+        return Object.entries(colors)
+            .map(
+                ([name, color]) =>
+                    `.task[data-list="${CSS.escape(name)}"] .task-project,\n` +
+                    `.task[data-list="${CSS.escape(name)}"] .task-title,\n` +
+                    `.task[data-list="${CSS.escape(name)}"] .task-title-input { color: ${color}; }`
+            )
+            .join('\n')
+    })
+
     // Derived project match
     let parsedProject = $derived(
         parseProjectMatch(newTaskContent, availableProjects)
@@ -397,6 +409,12 @@
     })
 </script>
 
+<svelte:head>
+    {#if listColorCSS}
+        {@html `<style>${listColorCSS}</style>`}
+    {/if}
+</svelte:head>
+
 <div class="panel-wrapper">
     <button
         class="widget-label"
@@ -441,7 +459,11 @@
             <div class="tasks">
                 <div class="tasks-list">
                     {#each tasks as task}
-                        <div class="task" class:completed={task.checked}>
+                        <div
+                            class="task"
+                            class:completed={task.checked}
+                            data-list={task.project_name || null}
+                        >
                             <button
                                 onclick={() =>
                                     toggleTask(task.id, !task.checked)}
@@ -453,24 +475,30 @@
                                     [ ]
                                 {/if}
                             </button>
-                            {#if task.project_name && task.project_name !== 'Inbox'}
-                                <span class="task-project"
-                                    >#{task.project_name}</span
-                                >
-                            {/if}
+                            <!-- {#if task.project_name && task.project_name !== 'Inbox'} -->
+                            <!--     <span class="task-project" -->
+                            <!--         >#{task.project_name}</span -->
+                            <!--     > -->
+                            <!-- {/if} -->
                             <span class="task-title">
-                                <input
+                                <textarea
                                     class="task-title-input"
                                     aria-label="edit task name"
+                                    rows="1"
                                     bind:value={editBuffer[task.id]}
+                                    oninput={(e) => {
+                                        e.target.style.height = 'auto'
+                                        e.target.style.height =
+                                            e.target.scrollHeight + 'px'
+                                    }}
                                     onblur={() => commitEdit(task.id)}
                                     onkeydown={(e) => {
-                                        if (e.key === 'Enter') {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
                                             e.preventDefault()
                                             e.target.blur()
                                         }
                                     }}
-                                />
+                                ></textarea>
                             </span>
                             {#if task.due_date}
                                 <span
@@ -518,7 +546,7 @@
         display: flex;
         align-items: baseline;
         gap: 1ch;
-        max-width: 40rem;
+        max-width: 30rem;
         white-space: nowrap;
         scroll-snap-align: start;
     }
@@ -530,12 +558,15 @@
     }
     .task-title-input {
         all: unset;
-        display: inline-block;
+        display: block;
         width: 100%;
         min-width: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+        resize: none;
         overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        field-sizing: content;
+        color: inherit;
     }
     .task-due {
         color: var(--txt-3);
