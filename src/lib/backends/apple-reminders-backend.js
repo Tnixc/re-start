@@ -2,35 +2,66 @@ import TaskBackend from "./task-backend.js";
 
 const HOST_NAME = "com.restart.apple_reminders";
 
+function sendNative(message) {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendNativeMessage(HOST_NAME, message, (resp) => {
+      if (chrome.runtime.lastError) {
+        reject(new Error(chrome.runtime.lastError.message));
+        return;
+      }
+      if (!resp?.success) {
+        reject(new Error(resp?.error ?? "Native host returned failure"));
+        return;
+      }
+      resolve(resp);
+    });
+  });
+}
+
 class AppleRemindersBackend extends TaskBackend {
   constructor(config) {
     super(config);
-    this.data = { items: [] };
+    this.data = { items: [], lists: [] };
+    // Track recently completed tasks so they stay visible after sync
+    this.recentlyCompleted = new Map(); // id -> { task, completedAt }
   }
 
   async sync(resourceTypes) {
-    const response = await new Promise((resolve, reject) => {
-      chrome.runtime.sendNativeMessage(HOST_NAME, { action: "getReminders" }, (resp) => {
-        if (chrome.runtime.lastError) {
-          reject(new Error(chrome.runtime.lastError.message));
-          return;
-        }
-        resolve(resp);
-      });
-    });
+    const [remindersResp, listsResp] = await Promise.all([
+      sendNative({ action: "getReminders" }),
+      sendNative({ action: "getLists" }),
+    ]);
 
-    if (response.success && response.items) {
-      this.data = { items: response.items };
-    } else {
-      throw new Error("Failed to fetch reminders from native host");
-    }
+    this.data = {
+      items: remindersResp.items,
+      lists: listsResp.lists,
+    };
   }
 
   getTasks() {
     if (!this.data.items) return [];
 
-    return this.data.items
-      .filter((item) => !item.is_deleted && !item.checked)
+    // Prune completions older than 5 minutes
+    const now = Date.now();
+    for (const [id, entry] of this.recentlyCompleted) {
+      if (now - entry.completedAt > 5 * 60 * 1000) {
+        this.recentlyCompleted.delete(id);
+      }
+    }
+
+    // Merge recently completed tasks that are no longer in the API response
+    const fetchedIds = new Set(this.data.items.map((item) => item.id));
+    const completedItems = [];
+    for (const [id, entry] of this.recentlyCompleted) {
+      if (!fetchedIds.has(id)) {
+        completedItems.push(entry.task);
+      }
+    }
+
+    const allItems = [...this.data.items, ...completedItems];
+
+    const mapped = allItems
+      .filter((item) => !item.is_deleted)
       .map((item) => {
         let dueDate = null;
         let hasTime = false;
@@ -51,50 +82,76 @@ class AppleRemindersBackend extends TaskBackend {
           has_time: hasTime,
         };
       });
+
+    // Unchecked first (sorted by due date), then completed at the bottom
+    return mapped.sort((a, b) => {
+      if (a.checked !== b.checked) return a.checked ? 1 : -1;
+      if (a.due_date && b.due_date) return a.due_date.getTime() - b.due_date.getTime();
+      if (a.due_date && !b.due_date) return -1;
+      if (!a.due_date && b.due_date) return 1;
+      return a.child_order - b.child_order;
+    });
   }
 
-  async addTask(content, due) {
-    this.data.items.push({
-      id: crypto.randomUUID(),
-      content,
-      checked: false,
-      completed_at: null,
-      due: due ? { date: due } : null,
-      project_id: null,
-      labels: [],
-      child_order: this.data.items.length,
-      is_deleted: false,
+  async addTask(content, due, listName) {
+    const list = listName || this.data.lists?.[0] || "Reminders";
+    await sendNative({
+      action: "addReminder",
+      list,
+      title: content,
+      dueDate: due || undefined,
     });
   }
 
   async completeTask(taskId) {
     const task = this.data.items.find((item) => item.id === taskId);
-    if (task) {
-      task.checked = true;
-      task.completed_at = new Date().toISOString();
-    }
+    if (!task) return;
+    this.recentlyCompleted.set(taskId, {
+      task: { ...task, checked: true, completed_at: new Date().toISOString() },
+      completedAt: Date.now(),
+    });
+    await sendNative({
+      action: "completeReminder",
+      list: task.project_name,
+      id: taskId,
+    });
   }
 
   async uncompleteTask(taskId) {
-    const task = this.data.items.find((item) => item.id === taskId);
-    if (task) {
-      task.checked = false;
-      task.completed_at = null;
-    }
+    const task =
+      this.data.items.find((item) => item.id === taskId) ??
+      this.recentlyCompleted.get(taskId)?.task;
+    this.recentlyCompleted.delete(taskId);
+    if (!task) return;
+    await sendNative({
+      action: "uncompleteReminder",
+      list: task.project_name,
+      id: taskId,
+    });
   }
 
   async deleteTask(taskId) {
-    const idx = this.data.items.findIndex((item) => item.id === taskId);
-    if (idx !== -1) {
-      this.data.items.splice(idx, 1);
-    }
+    const task =
+      this.data.items.find((item) => item.id === taskId) ??
+      this.recentlyCompleted.get(taskId)?.task;
+    this.recentlyCompleted.delete(taskId);
+    if (!task) return;
+    await sendNative({
+      action: "deleteReminder",
+      list: task.project_name,
+      id: taskId,
+    });
   }
 
   async editTaskName(taskId, newContent) {
     const task = this.data.items.find((item) => item.id === taskId);
-    if (task) {
-      task.content = newContent;
-    }
+    if (!task) return;
+    await sendNative({
+      action: "editReminder",
+      list: task.project_name,
+      id: taskId,
+      title: newContent,
+    });
   }
 
   clearLocalData() {}

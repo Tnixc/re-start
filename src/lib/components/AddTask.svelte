@@ -84,7 +84,10 @@
     const showPlaceholder = $derived(!value)
 </script>
 
-<form class:show onsubmit={handleSubmit}>
+<form class:show onsubmit={handleSubmit}
+
+            style="display: none;"
+>
     <span class="dark">+</span>
     <div class="input-shell">
         <div class="input-overlay" bind:this={overlayElement} aria-hidden="true">

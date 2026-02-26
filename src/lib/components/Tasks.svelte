@@ -226,6 +226,11 @@
                     id: tl.id,
                     name: tl.title,
                 }))
+            } else if (settings.taskBackend === 'apple-reminders') {
+                availableProjects = (api.data?.lists || []).map((name) => ({
+                    id: name,
+                    name,
+                }))
             }
         } catch (err) {
             // Check if this is an auth error for Google Tasks
@@ -441,6 +446,9 @@
                     <span>
                         <span class="bright">{taskCount}</span>
                         {taskLabel}
+                        {#if settings.taskBackend === 'apple-reminders'}
+                            <span class="task-scope">in the next 7 days</span>
+                        {/if}
                     </span>
                 {/if}
                 <AddTask
@@ -584,8 +592,9 @@
         opacity: 1;
         pointer-events: auto;
     }
-    .task.completed .task-title input {
+    .task.completed .task-title-input {
         text-decoration: line-through;
+        opacity: 0.5;
     }
     .overdue {
         color: var(--txt-err);
@@ -595,5 +604,8 @@
     }
     .checkbox-x {
         color: var(--txt-2);
+    }
+    .task-scope {
+        color: var(--txt-3);
     }
 </style>
