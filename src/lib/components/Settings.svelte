@@ -429,6 +429,12 @@
 							google tasks
 						</RadioButton>
 					{/if}
+					<RadioButton
+						bind:group={settings.taskBackend}
+						value="apple-reminders"
+					>
+						apple reminders
+					</RadioButton>
 				</div>
 			</div>
 

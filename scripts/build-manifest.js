@@ -32,10 +32,10 @@ if (browser === 'chrome') {
 } else if (browser === 'firefox') {
     // Remove Chrome-specific oauth2 configuration
     delete manifest.oauth2
-    // Remove identity permission - Firefox doesn't support chrome.identity.getAuthToken
+    // Remove Chrome-only permissions for Firefox
     if (manifest.permissions) {
         manifest.permissions = manifest.permissions.filter(
-            (p) => p !== 'identity'
+            (p) => p !== 'identity' && p !== 'nativeMessaging'
         )
     }
 }

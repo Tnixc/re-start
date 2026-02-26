@@ -1,6 +1,7 @@
 import TodoistBackend from './todoist-backend.js'
 import LocalStorageBackend from './localstorage-backend.js'
 import GoogleTasksBackendExtension from './google-tasks-backend.js'
+import AppleRemindersBackend from './apple-reminders-backend.js'
 
 export function createTaskBackend(type, config) {
     switch (type) {
@@ -10,9 +11,16 @@ export function createTaskBackend(type, config) {
             return new LocalStorageBackend(config)
         case 'google-tasks':
             return new GoogleTasksBackendExtension(config)
+        case 'apple-reminders':
+            return new AppleRemindersBackend(config)
         default:
             throw new Error(`Unknown backend type: ${type}`)
     }
 }
 
-export { TodoistBackend, LocalStorageBackend, GoogleTasksBackendExtension }
+export {
+    TodoistBackend,
+    LocalStorageBackend,
+    GoogleTasksBackendExtension,
+    AppleRemindersBackend,
+}
