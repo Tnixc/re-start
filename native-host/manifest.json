@@ -1,7 +1,7 @@
 {
-    "name": "com.restart.apple_reminders",
-    "description": "Native messaging host for Apple Reminders integration",
-    "path": "/PLACEHOLDER",
-    "type": "stdio",
-    "allowed_origins": ["chrome-extension://pcfmojgkkbhkoikeflglafkgnopemeii/"]
+  "name": "com.restart.apple_reminders",
+  "description": "Native messaging host for Apple Reminders integration",
+  "path": "/PLACEHOLDER",
+  "type": "stdio",
+  "allowed_origins": ["chrome-extension://pcfmojgkkbhkoikeflglafkgnopemeii/"]
 }

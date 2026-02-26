@@ -4,9 +4,12 @@ TUI-style browser extension startpage built with Svelte 5.
 
 ## Build
 
-- `npm run dev` — dev server at localhost:5173
-- `npm run build` / `npm run build:chrome` — production builds to `dist/firefox` or `dist/chrome`
-- `npm test` — vitest
+- `bun run dev` — dev server at localhost:5173
+- `bun run build` / `bun run build:chrome` — production builds to `dist/firefox` or `dist/chrome`
+- `bun test` — vitest
+- `bun run lint` — oxlint
+- `bun run fmt` — oxfmt (formatter)
+- `bun run fmt:check` — check formatting without writing
 
 ## Guidelines
 
