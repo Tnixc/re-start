@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -eou pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"

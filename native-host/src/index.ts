@@ -1,15 +1,4 @@
-import { execSync } from 'child_process'
-
-const HOST_NAME = 'com.restart.apple_reminders'
-
-function readMessage(): object | null {
-    // Chrome native messaging protocol: 4-byte LE length prefix + JSON
-    const header = new Uint8Array(4)
-    const headerBytes = Bun.stdin.stream().getReader()
-
-    // We use a synchronous approach: read all of stdin
-    return null
-}
+import { getRemindersWithinDays } from './reminders'
 
 function sendMessage(msg: object): void {
     const json = JSON.stringify(msg)
@@ -80,56 +69,27 @@ async function readNativeMessage(): Promise<object | null> {
 }
 
 async function main() {
-    const message = await readNativeMessage()
+    await readNativeMessage()
 
-    // Run a command on the host machine to demonstrate native execution
-    let hostInfo = ''
-    try {
-        hostInfo = execSync('whoami').toString().trim()
-    } catch {
-        hostInfo = 'unknown'
-    }
+    const reminders = getRemindersWithinDays(7)
 
-    const reminders = [
-        {
-            id: 'ar-1',
-            content: `"${hostInfo}" woah`,
-            checked: false,
-            completed_at: null,
-            due: null,
-            project_id: null,
-            labels: [],
-            child_order: 0,
-            is_deleted: false,
-        },
-        {
-            id: 'ar-2',
-            content: 'XXXX',
-            checked: false,
-            completed_at: null,
-            due: null,
-            project_id: null,
-            labels: [],
-            child_order: 1,
-            is_deleted: false,
-        },
-        {
-            id: 'ar-3',
-            content: execSync('echo $PATH').toString().trim(),
-            checked: false,
-            completed_at: null,
-            due: null,
-            project_id: null,
-            labels: [],
-            child_order: 2,
-            is_deleted: false,
-        },
-    ]
+    const items = reminders.map((r, i) => ({
+        id: r.externalId,
+        content: r.title,
+        checked: false,
+        completed_at: null,
+        due: r.dueDate ? { date: r.dueDate } : null,
+        project_id: null,
+        project_name: r.list,
+        labels: [],
+        notes: r.notes ?? '',
+        child_order: i,
+        is_deleted: false,
+    }))
 
     sendMessage({
         success: true,
-        host: hostInfo,
-        items: reminders,
+        items,
     })
 }
 
