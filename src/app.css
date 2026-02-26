@@ -117,3 +117,41 @@ input {
 .dark {
   color: var(--txt-3);
 }
+
+@keyframes unblur-in {
+  from {
+    filter: blur(4px);
+    transform: translateY(20px) scale(0.99);
+    opacity: 0;
+  }
+
+  to {
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+.panel-wrapper {
+  filter: blur(4px);
+  transform: translateY(4px);
+  opacity: 0;
+
+  animation: unblur-in 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+}
+
+.top {
+  :nth-child(1) {
+    animation-delay: 0.1s;
+  }
+  :nth-child(2) {
+    animation-delay: 0.2s;
+  }
+}
+.widgets {
+  :nth-child(1) {
+    animation-delay: 0.3s;
+  }
+  :nth-child(2) {
+    animation-delay: 0.4s;
+  }
+}
